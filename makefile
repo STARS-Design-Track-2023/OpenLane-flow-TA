@@ -20,7 +20,7 @@ COMPONENT_FILES  :=
 
 # Specify the filepath of the test bench you want to use (ie. tb_top_level.sv)
 # (do not include the source folder in the name)
-TB               := tb_$(TOP_FILE)
+TB               := tb_sample_rate_clkdiv.v
 
 # Get the top level design and test_bench module names
 TB_MODULE		 := $(notdir $(basename $(TB)))
@@ -30,15 +30,15 @@ TOP_MODULE	     := $(notdir $(basename $(TOP_FILE)))
 WF               ?= 0
 
 # Directries where the source and mapped code is located
-SRC              := source
+SRC              := src
 MAP              := mapped
+INC              := $(PWD)/includes_gl_sdf
 
 # Location of executables
 BUILD            := sim_build
 
 # Simulation Targets
 SIM_SOURCE       := sim_source
-SIM_MAPPED       := sim_mapped
 
 DUMP             := dump
 
@@ -47,17 +47,10 @@ VC               := iverilog
 # Flags currently described specify the 2012 IEEE verilog standard, require compiler
 # to look into the specify blocks in a cell lib, choose the max timings form the 
 # parameters and print out the compiler verbose.
-CFLAGS           := -v
-
-# Design Compiler
-DC               := yosys
+CFLAGS           := -g2012 -v
 
 # Cell libraries
-GATE_LIB         := AMI_05
-CELLS            := osu05_stdcells
-
 PDK_ROOT         := $(HOME)/pdk
-GL_PATH          := runs/RUN_2023.06.15_13.04.53/results/final/verilog/gl/sample_rate_clkdiv.v
 PDK              := sky130A
 
 ##############################################################################
@@ -88,17 +81,13 @@ help:
 	@echo "Compilation targets:"
 	@echo "  source       - compiles the source version of a full"
 	@echo "                 design including its top level test bench"
-	@echo "  mapped       - compiles and synthesizes the mapped version"
-	@echo "                 of a full design including its top level" 
-	@echo "                 test bench"
 	@echo
 	@echo "Simulation targets:"
 	@echo "  sim_source   - compiles and simulates the source version"
 	@echo "                 of a full design including its top level"
 	@echo "                 test bench"
-	@echo "  sim_mapped   - compiles and simulates the mapped version"
-	@echo "                 of a full design including its top level"
-	@echo "                 test bench"
+	@echo "  sim_time     - simulates a time for netlist of a full"
+	@echo "                 design with top level test_bench"
 	@echo 
 	@echo "Miscellaneous targets:"
 	@echo "  lint         - checks syntax for source files with the"
@@ -118,6 +107,7 @@ setup:
 	@mkdir -p ./docs
 	@mkdir -p ./$(MAP)
 	@mkdir -p ./$(BUILD)
+	@mkdir -p ./$(SRC)
 
 # Removes all non essential files that were made during the building process.
 clean:
@@ -127,7 +117,7 @@ clean:
 	@rm -f *.log
 	@rm -f *.vcd
 	@rm -f xt
-	@rm -f cvcsim
+	@rm -f includes_gl_sdf
 	@echo "Done\n\n"
 
 print_vars:
@@ -158,9 +148,9 @@ $(SRC): $(addprefix $(SRC)/, $(TOP_FILE) $(COMPONENT_FILES) $(TB))
 # Define a pattern rule to automatically compile mapped design files for a full mapped design
 $(MAP): $(addprefix $(SRC)/, $(TOP_FILE) $(COMPONENT_FILES) $(TB))
 	@echo "----------------------------------------------------------------"
-	@echo "Synthesizing and Compiling with gscl45nm process ....."
+	@echo "Compiling with sky130_fd_sc_hd process ....."
 	@echo "----------------------------------------------------------------\n\n"
-	$(VC) $(CFLAGS) -o $(SIM_MAPPED).vvp -DFUNCTIONAL -DUNIT_DELAY=#1 -v $(PDK_ROOT)/$(PDK)/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v -v $(PDK_ROOT)/$(PDK)/libs.ref/sky130_fd_sc_hd/verilog/primitives.v $(GL_PATH) $(SRC)/$(TB) 
+	@$(VC) $(CFLAGS) -o $(SIM_MAPPED).vvp -DFUNCTIONAL -DUNIT_DELAY=#1 -v $(PDK_ROOT)/$(PDK)/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v -v $(PDK_ROOT)/$(PDK)/libs.ref/sky130_fd_sc_hd/verilog/primitives.v $(GL_PATH) $(SRC)/$(TB) 
 	@echo "\n\n"
 	@echo "Compilation complete\n\n"
 
@@ -185,11 +175,15 @@ $(SIM_MAPPED): $(MAP)
 	@vvp -lxt -s sim_mapped.vvp
 	@echo "\n\n"
 
-time:
-	cvc64 +interp \
+sim_time:
+	@echo "----------------------------------------------------------------"
+	@echo "Simulating mapped ....."
+	@echo "----------------------------------------------------------------\n\n"
+	@./time_sim.py $(TOP_MODULE)
+	@cvc64 +interp \
 		+define+SIM +define+FUNCTIONAL +define+GL +define+USE_POWER_PINS +define+UNIT_DELAY \
-		+change_port_type +dump2fst +fst+parallel2=on  +nointeractive \
-		-f /home/designer-06/work/OpenLane/designs/sample_rate_clkdiv/includes_gl_sdf
+		+define+ENABLE_SDF +change_port_type +dump2fst +fst+parallel2=on  +nointeractive \
+		-f $(INC) > time.log
 
 ##############################################################################
 # Miscellaneous Targets
