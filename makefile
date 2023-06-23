@@ -108,6 +108,8 @@ setup:
 	@mkdir -p ./$(MAP)
 	@mkdir -p ./$(BUILD)
 	@mkdir -p ./$(SRC)
+	@mv ./setup.py ../
+	@./../setup.py
 
 # Removes all non essential files that were made during the building process.
 clean:
