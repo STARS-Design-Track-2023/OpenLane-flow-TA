@@ -62,7 +62,8 @@ module tb_sample_rate_clkdiv ();
         #(CLK_PERIOD/2.0);
     end
 
-    // Port Map
+    /* --- Port Map (One for gl sim and the other for RTL sim) --- */
+    `ifdef USE_POWER_PINS
     sample_rate_clkdiv DUT
     (
         .VPWR(1),
@@ -71,6 +72,15 @@ module tb_sample_rate_clkdiv ();
         .n_rst(tb_n_rst),
         .divide_now(tb_divide_now)
     );
+    `else
+    sample_rate_clkdiv DUT
+    (
+        .clk(tb_clk),
+        .n_rst(tb_n_rst),
+        .divide_now(tb_divide_now)
+    );
+    `endif
+    /* -------------------------- END ---------------------------- */
 
     // Create a file for Signal Dump
     initial begin
@@ -78,13 +88,15 @@ module tb_sample_rate_clkdiv ();
         $dumpvars;
     end
 
-    // SDF annotation to simulate time
+    /* --------- SDF annotation to simulate time for the verilog model -------- */
+    `ifdef ENABLE_SDF
     initial begin
-        $sdf_annotate("/home/designer-06/work/OpenLane/designs/sample_rate_clkdiv/runs/RUN_2023.06.15_13.04.53/results/final/sdf/multicorner/nom/sample_rate_clkdiv.Typical.sdf", DUT,,);
+        $sdf_annotate("mapped/synth.sdf", DUT,,);
     end
+    `endif
+    /* ------ Please do not modify this code should be there in every tb ------ */
 
     initial begin
-        $display("I am here");
         // Initialize all of the test inputs
         tb_n_rst = 1'b1;
         tb_test_num = 0;
