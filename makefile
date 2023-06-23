@@ -104,10 +104,9 @@ all: $(SIM_SOURCE)
 
 # A target that sets up the working directory structure
 setup:
-	@mkdir -p ./docs
-	@mkdir -p ./$(MAP)
-	@mkdir -p ./$(BUILD)
-	@mkdir -p ./$(SRC)
+	@mkdir -p ../docs
+	@mkdir -p ../$(MAP)
+	@mkdir -p ../$(BUILD)
 	@mv ./setup.py ../
 	@./../setup.py
 

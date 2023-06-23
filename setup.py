@@ -4,7 +4,7 @@ import subprocess, os
 
 def setup ():
     os.chdir("../")
-    subprocess.call ("mv OpenLane-flow/cvc_pdk ../", shell=True)
+    subprocess.call ("mv OpenLane-flow/cvc_pdk .", shell=True)
     subprocess.call ("mv OpenLane-flow/makefile .", shell=True)
     subprocess.call ("mv OpenLane-flow/config.json .", shell=True)
     subprocess.call ("mv OpenLane-flow/time_sim.py .", shell=True)
