@@ -1,18 +1,30 @@
 #!/usr/bin/env python3
 
-import subprocess, os
+# Import the required libraries
+import subprocess as s
+import os
 
-def setup ():
+def main ():
+
+    # Move dependencies and the pdk to the home directory
+    s.call ("mv pdk ~/.", shell=True)
+    s.call ("mv build ~/.", shell=True)
+
+    # Change the directory
     os.chdir("../")
-    subprocess.call ("mv OpenLane-flow/cvc_pdk .", shell=True)
-    subprocess.call ("mv OpenLane-flow/makefile .", shell=True)
-    subprocess.call ("mv OpenLane-flow/config.json .", shell=True)
-    subprocess.call ("mv OpenLane-flow/time_sim.py .", shell=True)
-    # Only exists for TA example
-    subprocess.call ("rm -rf src", shell=True)
-    subprocess.call ("mv OpenLane-flow/src .", shell=True)
-    subprocess.call ("rm -rf OpenLane-flow", shell=True)
 
+    # Clone the OpenLane github repo
+    s.call ("git clone https://github.com/The-OpenROAD-Project/OpenLane.git", shell=True)
+    
+    # Setup the environment
+    s.call ('echo "export PDK_ROOT=~/pdk" >> ~/.bashrc')
+    os.system ("source ~/.bashrc")
+
+    # Change into the OpenLane directory
+    os.chdir("OpenLane/")
+    
+    # Test the flow 
+    s.call ("make test", shell=True)
 
 if __name__ == "__main__":
-    setup ()
+    main ()
