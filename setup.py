@@ -17,7 +17,7 @@ def main ():
     s.call ("git clone https://github.com/The-OpenROAD-Project/OpenLane.git", shell=True)
     
     # Setup the environment
-    s.call ('echo "export PDK_ROOT=~/pdk" >> ~/.bashrc')
+    s.call ('echo "export PDK_ROOT=~/pdk" >> ~/.bashrc', shell=True)
     os.system ("source ~/.bashrc")
 
     # Change into the OpenLane directory
