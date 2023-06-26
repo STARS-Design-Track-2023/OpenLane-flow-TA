@@ -9,9 +9,10 @@ def main ():
     # Move dependencies and the pdk to the home directory
     s.call ("mv pdk ~/.", shell=True)
     s.call ("mv build ~/.", shell=True)
+    s.call ("mv init_design.py ~/.", shell=True)
 
     # Change the directory
-    os.chdir("../")
+    os.chdir(os.path.expanduser('~'))
 
     # Clone the OpenLane github repo
     s.call ("git clone https://github.com/The-OpenROAD-Project/OpenLane.git", shell=True)
@@ -23,6 +24,9 @@ def main ():
     # Change into the OpenLane directory
     os.chdir("OpenLane/")
     
+    # Move the values init_design.py to the Openlane directory
+    s.call ("mv ~/init_design.py .", shell=True)
+
     # Test the flow 
     s.call ("make test", shell=True)
 
